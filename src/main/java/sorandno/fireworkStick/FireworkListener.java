@@ -16,7 +16,7 @@ import java.util.*;
 public class FireworkListener implements Listener {
 
     private final Plugin plugin;
-    private static final NamespacedKey FIREWORK_WAND_KEY = new NamespacedKey("yourplugin", "firework_wand");
+    private static final NamespacedKey FIREWORK_WAND_KEY = new NamespacedKey("fireworckstick", "firework_wand");
     private Material fireworkItem;
 
     private static final List<Color> PRETTY_COLORS = Arrays.asList(
