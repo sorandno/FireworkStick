@@ -1,0 +1,14 @@
+name: FireworkStick
+version: '1.0-SNAPSHOT'
+main: sorandno.fireworkStick.FireworkStick
+api-version: '1.21'
+commands:
+  getfireworkstick:
+    aliases: [ getfs ]
+    description: getfireworkstick command
+    permission: fireworkstick.commands.getfireworkstick
+    permission-message: "you don't have any permissions!"
+permissions:
+  fireworkstick.commands.getfireworkstick:
+    description: getfireworkstick command permission description
+    default: true
