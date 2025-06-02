@@ -1,2 +1,2 @@
-FireworkStick
+<H1>FireworkStick</H1>
 花火の杖で、視線の先のブロックから明るいランダム色の花火を打ち上げるお遊びプラグイン
