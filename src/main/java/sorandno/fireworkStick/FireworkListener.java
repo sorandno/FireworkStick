@@ -19,9 +19,11 @@ public class FireworkListener implements Listener {
 
     private final Plugin plugin;
     private final List<ParticlePattern> patterns;
-    public FireworkListener(Plugin plugin, List<ParticlePattern> patterns) {
+    private final List<String> patternNames;
+    public FireworkListener(Plugin plugin, List<ParticlePattern> patterns, List<String> patternNames) {
         this.plugin = plugin;
         this.patterns = patterns;
+        this.patternNames = patternNames;
 
     }
 
@@ -213,7 +215,7 @@ public class FireworkListener implements Listener {
                     player.sendActionBar("§d形状切替: " + shape.name());
                 } else if (nextMode < totalShapes + totalPatterns) {
                     int patternIndex = nextMode - totalShapes;
-                    player.sendActionBar("§dパターン切替: " + (patternIndex + 1));
+                    player.sendActionBar("§dパターン切替: " + (patternIndex + 1) + "：" + patternNames.get(patternIndex));
                 } else {
                     int randomIndex = nextMode - totalShapes - totalPatterns;
                     if (randomIndex == 0) {

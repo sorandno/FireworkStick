@@ -9,15 +9,16 @@ import java.util.List;
 
 public final class FireworkStick extends JavaPlugin {
     private final List<ParticlePattern> patterns = new ArrayList<>();
+    private final List<String> patternNames = new ArrayList<>();
 
     @Override
     public void onEnable() {
         // Plugin startup logic
         registerConfig();
         getCommand("getfireworkstick").setExecutor(new GetFireworkStickCommand(this));
-        Bukkit.getPluginManager().registerEvents(new FireworkListener(this, patterns), this);
+        Bukkit.getPluginManager().registerEvents(new FireworkListener(this, patterns, patternNames), this);
 
-        saveResource("1.csv", false);
+        saveResource("ania.csv", false);
         // 必要に応じて他csvファイルもコピー
         if (!getDataFolder().exists()) getDataFolder().mkdirs();
         File[] csvFiles = getDataFolder().listFiles((dir, name) -> name.toLowerCase().endsWith(".csv"));
@@ -25,6 +26,9 @@ public final class FireworkStick extends JavaPlugin {
             for (File file : csvFiles) {
                 ParticlePattern pattern = new ParticlePattern(this, file);
                 patterns.add(pattern);
+                String fileName = file.getName();
+                fileName = fileName.substring(0, fileName.length() - 4);
+                patternNames.add(fileName);
                 getLogger().info("Loaded pattern: " + file.getName());
             }
         }
