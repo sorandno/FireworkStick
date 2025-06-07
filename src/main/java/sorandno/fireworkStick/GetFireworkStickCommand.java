@@ -14,8 +14,6 @@ import org.bukkit.plugin.Plugin;
 
 public class GetFireworkStickCommand implements CommandExecutor {
     private final Plugin plugin;
-    private Material fireworkItem;
-
     public GetFireworkStickCommand(Plugin plugin) {
         this.plugin = plugin;
     }
@@ -30,7 +28,7 @@ public class GetFireworkStickCommand implements CommandExecutor {
             if (args.length == 0) { //サブコマンドの個数が0、つまりサブコマンド無し
                 Player p = Bukkit.getPlayer(sender.getName());
                 String materialName = plugin.getConfig().getString("FireworkMaterial");
-                fireworkItem = Material.valueOf(materialName);
+                Material fireworkItem = Material.valueOf(materialName);
                 ItemStack items = new ItemStack(fireworkItem);
                 ItemMeta meta = items.getItemMeta(); // ItemMetaを取得
                 String itemName = plugin.getConfig().getString("FireworkItemName");

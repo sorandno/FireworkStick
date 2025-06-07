@@ -1,9 +1,7 @@
 package sorandno.fireworkStick;
 
 import org.bukkit.*;
-import org.bukkit.entity.Entity;
 import org.bukkit.entity.Firework;
-import org.bukkit.entity.LivingEntity;
 import org.bukkit.entity.Player;
 import org.bukkit.event.*;
 import org.bukkit.event.player.*;
@@ -20,20 +18,22 @@ import java.util.*;
 public class FireworkListener implements Listener {
 
     private final Plugin plugin;
+    private final List<ParticlePattern> patterns;
+    public FireworkListener(Plugin plugin, List<ParticlePattern> patterns) {
+        this.plugin = plugin;
+        this.patterns = patterns;
+
+    }
+
     private static final NamespacedKey FIREWORK_WAND_KEY = new NamespacedKey("fireworckstick", "firework_wand");
-    private Material fireworkItem;
+    public static NamespacedKey getWandKey() {
+        return FIREWORK_WAND_KEY;
+    }
 
     private static final List<Color> PRETTY_COLORS = Arrays.asList(
             Color.RED, Color.ORANGE, Color.YELLOW, Color.LIME, Color.AQUA,
             Color.BLUE, Color.FUCHSIA, Color.PURPLE, Color.WHITE
     );
-
-    private final Random random = new Random();
-
-    private final Map<UUID, FireworkEffect.Type> playerShapeMap = new HashMap<>();
-    private final Map<UUID, Integer> playerRadiusMap = new HashMap<>();
-    private final Map<UUID, Integer> playerSelectedPattern = new HashMap<>();
-    private final List<ParticlePattern> patterns;
 
     private static final FireworkEffect.Type[] SHAPES = {
             FireworkEffect.Type.BALL,
@@ -43,19 +43,13 @@ public class FireworkListener implements Listener {
             FireworkEffect.Type.CREEPER
     };
 
-    public FireworkListener(Plugin plugin, List<ParticlePattern> patterns) {
-        this.plugin = plugin;
-        this.patterns = patterns;
-
-    }
-
-    public static NamespacedKey getWandKey() {
-        return FIREWORK_WAND_KEY;
-    }
+    private final Random random = new Random();
+    private final Map<UUID, Integer> playerRadiusMap = new HashMap<>();
+    private final Map<UUID, Integer> playerSelectedPattern = new HashMap<>();
 
     private boolean isValidWand(ItemStack item) {
         String materialName = plugin.getConfig().getString("FireworkMaterial");
-        fireworkItem = Material.valueOf(materialName);
+        Material fireworkItem = Material.valueOf(materialName);
 
         if (item == null || item.getType() != fireworkItem) return false;
         String itemName = plugin.getConfig().getString("FireworkItemName");
@@ -90,19 +84,18 @@ public class FireworkListener implements Listener {
                     }
                 }
                 if (baseLoc == null) {
-                    player.sendMessage(ChatColor.RED + "発射地点が見つかりません。");
+                    player.sendMessage("§c発射地点が見つかりません。");
                     return;
                 }
 
                 int totalShapes = SHAPES.length;      // 通常花火数（ランダム含む）
                 int totalPatterns = patterns.size(); // パターン数
-                int totalRandomModes = 3;             // ランダムモード3種
 
                 int radius = playerRadiusMap.getOrDefault(uuid, 0);
                 double dx = 0, dz = 0;
                 if (radius > 0) {
-                    dx = (double)(random.nextInt(radius * 2 + 1) - radius);
-                    dz = (double)(random.nextInt(radius * 2 + 1) - radius);
+                    dx = random.nextInt(radius * 2 + 1) - radius;
+                    dz = random.nextInt(radius * 2 + 1) - radius;
                 }
                 Location fireworkLoc = baseLoc.clone().add(dx, 0, dz);
 
@@ -126,18 +119,15 @@ public class FireworkListener implements Listener {
 
                     fwMeta.setPower(0);
                     firework.setFireworkMeta(fwMeta);
-
-//                    player.sendMessage(ChatColor.GREEN + "通常の花火を発射しました！");
                 } else if (mode < totalShapes + totalPatterns) {
                     // パターン（順番に）発射
                     int patternIdx = mode - totalShapes;
                     if (patterns.isEmpty()) {
-                        player.sendMessage(ChatColor.RED + "パターンが読み込まれていません。");
+                        player.sendMessage("§cパターンが読み込まれていません。");
                         return;
                     }
                     ParticlePattern pattern = patterns.get(patternIdx);
                     shootPatternBeam(player, pattern, fireworkLoc);
-//                    player.sendMessage(ChatColor.GREEN + "パターン " + (patternIdx + 1) + " を発射しました！");
                 } else {
                     // ランダムモード3種類のいずれか
                     int randomModeIdx = mode - totalShapes - totalPatterns;
@@ -162,25 +152,21 @@ public class FireworkListener implements Listener {
 
                         fwMeta.setPower(0);
                         firework.setFireworkMeta(fwMeta);
-
-//                        player.sendMessage(ChatColor.GREEN + "ランダム通常の花火を発射しました！");
                     } else if (randomModeIdx == 1) {
                         // ランダムパターンのみ
                         if (patterns.isEmpty()) {
-                            player.sendMessage(ChatColor.RED + "パターンが読み込まれていません。");
+                            player.sendMessage("§cパターンが読み込まれていません。");
                             return;
                         }
                         ParticlePattern pattern = patterns.get(random.nextInt(patterns.size()));
                         shootPatternBeam(player, pattern, fireworkLoc);
-//                        player.sendMessage(ChatColor.GREEN + "ランダムパターンを発射しました！");
                     } else {
                         // ランダム 通常花火 or パターン混合
-                        boolean usePattern = random.nextBoolean();
+                        int choice = random.nextInt(totalShapes + totalPatterns);
 
-                        if (usePattern && !patterns.isEmpty()) {
+                        if (choice < patterns.size()) {
                             ParticlePattern pattern = patterns.get(random.nextInt(patterns.size()));
                             shootPatternBeam(player, pattern, fireworkLoc);
-//                            player.sendMessage(ChatColor.GREEN + "ランダムでパターンを発射しました！");
                         } else {
                             FireworkEffect.Type shape = SHAPES[random.nextInt(SHAPES.length)];
 
@@ -200,8 +186,6 @@ public class FireworkListener implements Listener {
 
                             fwMeta.setPower(0);
                             firework.setFireworkMeta(fwMeta);
-
-//                            player.sendMessage(ChatColor.GREEN + "ランダムで通常の花火を発射しました！");
                         }
                     }
                 }
@@ -226,7 +210,6 @@ public class FireworkListener implements Listener {
 
                 if (nextMode < totalShapes) {
                     FireworkEffect.Type shape = SHAPES[nextMode];
-                    playerShapeMap.put(uuid, shape);
                     player.sendActionBar("§d形状切替: " + shape.name());
                 } else if (nextMode < totalShapes + totalPatterns) {
                     int patternIndex = nextMode - totalShapes;
@@ -262,13 +245,9 @@ public class FireworkListener implements Listener {
         player.sendActionBar("§e花火発射範囲：半径 §a" + radius + " マス");
     }
 
-    private void shootPatternBeam(Player player, ParticlePattern pattern, Location _fwLoc) {
+    private void shootPatternBeam(Player player, ParticlePattern pattern, Location fwLoc) {
         Location eyeLoc = player.getEyeLocation();
         org.bukkit.util.Vector directionEye = eyeLoc.getDirection().normalize();
-
-        Location fwLoc = _fwLoc;
-//        fwLoc.setYaw(0f);
-//        fwLoc.setPitch(0f);
 
         Location start = fwLoc.clone().add(0, 1, 0);       // 出発点（プレイヤーの目）
         Location target = start.clone().add(0.0001, 20, 0);
